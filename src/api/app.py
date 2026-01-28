@@ -18,7 +18,6 @@ async def websocket_endpoint(ws:WebSocket):
         await ws.send_text(f"I got your message! : {data}")
 
 
-
 @app.post('/api/message')
 def new_message(msg:Message):
     if msg.content:
@@ -40,9 +39,9 @@ def new_message(msg:Message):
 @app.get('/api/message')
 def get_message(id:int):
     all_messages = [json.loads(msg) for msg in redis_client.lrange(key,0,-1)]
-    for i in all_messages:
-        if i['id'] == id:
-            return JSONResponse({'id':i['id'],'message':id['content'],'created_at':i['created_at']},
+    for msg in all_messages:
+        if msg['id'] == id:
+            return JSONResponse(content=msg,
                                 status_code=status.HTTP_200_OK)
         else:
             return Response("Message not found!",status_code=status.HTTP_404_NOT_FOUND)
@@ -56,9 +55,11 @@ def get_all_messages():
     if len(messages) != 0:
         msgs = {'messages':[]}
         for msg in messages:
-            msgs['messages'].append({'id':msg['id'],'message':msg['content'],'created_at':msg['created_at']})
+            msgs['messages'].append({'id':msg['id'],
+                                     'message':msg['content'],
+                                     'created_at':msg['created_at']})
         
-        return JSONResponse(msgs,status_code=status.HTTP_200_OK)
+        return JSONResponse(content=msgs,status_code=status.HTTP_200_OK)
     
 
 
@@ -67,5 +68,13 @@ def get_all_messages():
 def delete_message(id:int):
         messages = [json.loads(msg) for msg in redis_client.lrange(key,0,-1)]
         for message in messages:
-            if int(message['id']) == id:
+            if int(message['id']) == id: # TODO: Complite this later with new method
+                ...
+
+
+
+@app.delete('/api/messages')
+def delete_all_messages():
+    redis_client.ltrim('messages',1,0)
+    return Response('ok',status_code=status.HTTP_200_OK)
                 
