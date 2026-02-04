@@ -1,7 +1,7 @@
 from fastapi import FastAPI , WebSocket , status
 from fastapi.responses import Response , JSONResponse
-from db.database import redis_client , key
-from api.models import Message
+from database import redis_client , KEY
+from models import Message
 
 import datetime
 import json
@@ -22,7 +22,7 @@ async def websocket_endpoint(ws:WebSocket):
 def new_message(msg:Message):
     if msg.content:
         guid = random.randint(10000,345345345)
-        redis_client.rpush(key,json.dumps({
+        redis_client.rpush(KEY,json.dumps({
             'id':guid,
             'content':msg.content,
             'created_at':str(datetime.datetime.now())
@@ -38,20 +38,22 @@ def new_message(msg:Message):
 # NOTE: not recommended 
 @app.get('/api/message')
 def get_message(id:int):
-    all_messages = [json.loads(msg) for msg in redis_client.lrange(key,0,-1)]
+    all_messages = [json.loads(msg) for msg in redis_client.lrange(KEY,0,-1)]
     for msg in all_messages:
         if msg['id'] == id:
             return JSONResponse(content=msg,
                                 status_code=status.HTTP_200_OK)
-        else:
-            return Response("Message not found!",status_code=status.HTTP_404_NOT_FOUND)
+    
+    else:
+        return Response("Message not found!",status_code=status.HTTP_404_NOT_FOUND)
+            
     
 
 
 
 @app.get('/api/messages')
 def get_all_messages():
-    messages = [json.loads(msg) for msg in redis_client.lrange(key,0,-1)]
+    messages = [json.loads(msg) for msg in redis_client.lrange(KEY,0,-1)]
     if len(messages) != 0:
         msgs = {'messages':[]}
         for msg in messages:
@@ -66,7 +68,7 @@ def get_all_messages():
 
 @app.delete('/api/message')
 def delete_message(id:int):
-        messages = [json.loads(msg) for msg in redis_client.lrange(key,0,-1)]
+        messages = [json.loads(msg) for msg in redis_client.lrange(KEY,0,-1)]
         for message in messages:
             if int(message['id']) == id: # TODO: Complite this later with new method
                 ...
