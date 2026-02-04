@@ -24,7 +24,7 @@ redis_client = Redis(
     decode_responses=True
 )
 
-key = 'messages'
+KEY = 'messages'
 if __name__ == "__main__":
-    redis_client.delete('messages')
-    redis_client.expire('messages', 36000)
+    redis_client.delete(KEY)
+    redis_client.expire(KEY)
