@@ -1,2 +1,2 @@
-from api.app import app
-import db.database
+from app import app
+import database
