@@ -1,5 +1,8 @@
-from fastapi import FastAPI , WebSocket , status
+from fastapi import FastAPI , WebSocket , status , WebSocketDisconnect
 from fastapi.responses import Response , JSONResponse
+from fastapi.requests import Request
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from database import redis_client , KEY
 from models import Message
 
@@ -9,13 +12,33 @@ import random
 
 
 app = FastAPI()
+app.mount('/statics',StaticFiles(directory='statics'),name='statics')
+app.middleware(allow_origins=["*"])
+
+
+connections : list[WebSocket] = []
+templates = Jinja2Templates(directory='statics/templates')
 
 @app.websocket('/ws')
 async def websocket_endpoint(ws:WebSocket):
+    print("WS Connected!")
     await ws.accept()
-    while True:
-        data = await ws.receive_text()
-        await ws.send_text(f"I got your message! : {data}")
+    connections.append(ws)
+    try:
+        while True:
+            data = await ws.receive_text()
+            print(f'New Message Recived! : {data}')
+            for connection in connections:
+                await connection.send_text(data)
+    except WebSocketDisconnect:
+        connections.remove(ws)
+
+
+@app.get('/')
+def root(request:Request):
+    return templates.TemplateResponse(request=request,
+                                      name="index.html",
+                                      context={'messages':[json.loads(msg) for msg in redis_client.lrange(KEY,0,-1)]})
 
 
 
