@@ -13,7 +13,7 @@ import random
 
 app = FastAPI()
 app.mount('/statics',StaticFiles(directory='statics'),name='statics')
-app.middleware(allow_origins=["*"])
+
 
 
 connections : list[WebSocket] = []
@@ -21,17 +21,21 @@ templates = Jinja2Templates(directory='statics/templates')
 
 @app.websocket('/ws')
 async def websocket_endpoint(ws:WebSocket):
-    print("WS Connected!")
     await ws.accept()
     connections.append(ws)
     try:
         while True:
-            data = await ws.receive_text()
-            print(f'New Message Recived! : {data}')
+            data = await ws.receive_json()
+            guid = random.randint(10000,345345345)
+            redis_client.rpush(KEY,json.dumps({
+                'id':guid,
+                'content':data['content'],
+                'created_at':str(datetime.datetime.now())
+            }))
             for connection in connections:
-                await connection.send_text(data)
+                await connection.send_json(data)
     except WebSocketDisconnect:
-        connections.remove(ws)
+        connections.remove(ws)  
 
 
 @app.get('/')
