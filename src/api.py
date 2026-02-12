@@ -16,7 +16,7 @@ app.mount('/statics',StaticFiles(directory='statics'),name='statics')
 
 
 
-connections : list[WebSocket] = []
+connections : list[WebSocket] = []  
 templates = Jinja2Templates(directory='statics/templates')
 
 @app.websocket('/ws')
