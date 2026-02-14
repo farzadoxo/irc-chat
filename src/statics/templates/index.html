@@ -99,7 +99,9 @@ function sendMessage(){
 window.onload = async () => {
     await loadMessages()
 
-    ws = new WebSocket("ws://192.168.1.101:8000/ws")
+    const protocol = location.protocol === "https:" ? "wss:" : "ws:"
+    ws = new WebSocket(`${protocol}//${location.host}/ws`)
+
 
     ws.onopen = () => console.log("WS CONNECTED")
 
