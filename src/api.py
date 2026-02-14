@@ -3,6 +3,7 @@ from fastapi.responses import Response , JSONResponse
 from fastapi.requests import Request
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from database import redis_client , KEY
 from models import Message
 
@@ -13,10 +14,16 @@ import random
 
 app = FastAPI()
 app.mount('/statics',StaticFiles(directory='statics'),name='statics')
+app.add_middleware(CORSMiddleware,
+                   allow_origins=['*'],
+                   allow_methods=['*'],
+                   allow_headers=['*'],
+                   allow_credentials=True
+                   )
 
 
-
-connections : list[WebSocket] = []  
+connections : list[WebSocket] = []
+dead_connections : list[WebSocket] = []
 templates = Jinja2Templates(directory='statics/templates')
 
 @app.websocket('/ws')
@@ -32,10 +39,21 @@ async def websocket_endpoint(ws:WebSocket):
                 'content':data['content'],
                 'created_at':str(datetime.datetime.now())
             }))
+
+            # broadcasting and removing dead connected websockets from connection list
             for connection in connections:
-                await connection.send_json(data)
+                try:
+                    await connection.send_json(data)
+                except:
+                    dead_connections.append(connection)
+            for dead in dead_connections:
+                connections.remove(dead)
+
     except WebSocketDisconnect:
-        connections.remove(ws)  
+        if ws in connections:
+            connections.remove(ws)  
+
+
 
 
 @app.get('/')
@@ -81,16 +99,15 @@ def get_message(id:int):
 @app.get('/api/messages')
 def get_all_messages():
     messages = [json.loads(msg) for msg in redis_client.lrange(KEY,0,-1)]
-    if len(messages) != 0:
-        msgs = {'messages':[]}
-        for msg in messages:
-            msgs['messages'].append({'id':msg['id'],
-                                     'message':msg['content'],
-                                     'created_at':msg['created_at']})
-        
-        return JSONResponse(content=msgs,status_code=status.HTTP_200_OK)
-    
+    msgs = {'messages':[]}
 
+    for msg in messages:
+        msgs['messages'].append({'id':msg['id'],
+                                    'message':msg['content'],
+                                    'created_at':msg['created_at']})
+    
+    return JSONResponse(content=msgs,status_code=status.HTTP_200_OK)
+    
 
 # NOTE: Not so recommended
 @app.delete('/api/message')
