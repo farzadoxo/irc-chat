@@ -17,6 +17,9 @@
 
 """ REDIS VERSION """
 from redis import Redis
+import datetime
+import json
+
 
 redis_client = Redis(
     host='127.0.0.1',
@@ -25,6 +28,8 @@ redis_client = Redis(
 )
 
 KEY = 'messages'
-if __name__ == "__main__":
-    redis_client.delete(KEY)
-    redis_client.expire(KEY, 3600)
+
+# init 
+redis_client.delete(KEY)
+redis_client.expire(KEY, 10)
+redis_client.rpush(KEY,json.dumps({'id':0,'content':'🔽 ------ MESSAGES ------ 🔽','created_at':str(datetime.datetime.now())}))
