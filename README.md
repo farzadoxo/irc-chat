@@ -4,3 +4,4 @@ A simple system for chatting and exchanging text messages like the old IRC. This
 - Easy to set up (Docker)
 - Under your supervision
 - No interception or permanent storage of information
+- Room creating
