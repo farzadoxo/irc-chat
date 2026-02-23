@@ -5,6 +5,12 @@ from fastapi.requests import Request
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from database import redis_client , KEY
+from models import Message
+
+import datetime
+import json
+import random
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "statics"
