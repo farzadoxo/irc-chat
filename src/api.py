@@ -1,26 +1,27 @@
-from fastapi import FastAPI , WebSocket , status , WebSocketDisconnect
-from fastapi.responses import Response , JSONResponse
+from pathlib import Path
+from fastapi import FastAPI, WebSocket, status, WebSocketDisconnect
+from fastapi.responses import Response, JSONResponse, HTMLResponse
 from fastapi.requests import Request
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from database import redis_client , KEY
-from models import Message
 
-import datetime
-import json
-import random
-
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "statics"
+TEMPLATES_DIR = STATIC_DIR / "templates"
 
 app = FastAPI()
-app.mount('/statics',StaticFiles(directory='statics'),name='statics')
-app.add_middleware(CORSMiddleware,
-                   allow_origins=['*'],
-                   allow_methods=['*'],
-                   allow_headers=['*'],
-                   allow_credentials=True
-                   )
 
+app.mount("/statics", StaticFiles(directory=str(STATIC_DIR)), name="statics")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=True,
+)
 
 connections : list[WebSocket] = []
 dead_connections : list[WebSocket] = []
