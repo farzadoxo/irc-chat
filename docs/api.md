@@ -1,4 +1,4 @@
-# Api Documention
+# Api Documentation
 
 ### Websocket
 ```json
