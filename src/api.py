@@ -6,11 +6,12 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from database import redis_client , KEY
-from models import Message
+from models import Message,Room
 
 import datetime
 import json
 import random
+import os
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "statics"
@@ -133,4 +134,65 @@ def delete_message(id:int):
 def delete_all_messages():
     redis_client.ltrim('messages',1,0)
     return Response('Ok',status_code=status.HTTP_200_OK)
+
+
+"""ROOM"""
+
+@app.post('/api/rooms')
+def new_room(room:Room):
+    key='rooms'
+    guid = os.urandom(4).hex()
+    new_room = f"room:{guid}"
+    
+    try:
+        redis_client.rpush(new_room,json.dumps({
+            "id":f"{random.randint(435333,3456622)}",
+            "content":"------- MESSAGES -------- ",
+            "created_at":str(datetime.datetime.now())
+            }))
+
+
+        redis_client.rpush(key,json.dumps({
+            "id":guid,
+            "name":room.name,
+            "user_limit":room.user_limit,
+            "visable":str(room.visable)}))
+        
+        return Response("Room created successfully!",status_code=status.HTTP_201_CREATED)
+    
+    except Exception as error:
+        return Response(f"Somthing went wrong: {error}")
+    
+
+
+
+@app.get('/api/rooms')
+def get_all_rooms():
+    rooms = [json.loads(room) for room in redis_client.lrange('rooms',0,-1)]
+    rms = {"rooms":[]}
+
+    for room in rooms:
+        if room['visable'] == "True":
+            rms['rooms'].append({"id":room['id'],
+                                "name":room['name'],
+                                "user_limit":room['user_limit'],
+                                "visable":room['visable']})
+        
+    return JSONResponse(rms,status_code=status.HTTP_200_OK)
+
+
+
+@app.get('/api/room/{room_id}')
+def get_room(room_id):
+    rooms = [json.loads(room) for room in redis_client.lrange('rooms',0,-1)]
+    for room in rooms:
+        if room['id'] == room_id:
+                messages = [json.loads(msg) for msg in redis_client.lrange(f"room:{room_id}",0,-1)]
+                stat = {"info":{},"messages":[]}
+                stat['info'] = {"room":room['id'],"user_limit":room['user_limit'],"visable":room['visable']}
+                for message in messages:
+                    stat['messages'].append({"id":message['id'],
+                                            "content":message['content'],
+                                            "created_at":message['created_at']})
                 
+                return JSONResponse(stat,status_code=status.HTTP_200_OK)
