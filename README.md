@@ -1,7 +1,9 @@
 
-<h1>چت آی آر سی (FA) <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/State_flag_of_Iran_%281964%E2%80%931980%29.svg/330px-State_flag_of_Iran_%281964%E2%80%931980%29.svg.png" width="70px" height="70px"></h1>
+<h1>چت آی آر سی (FA) <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/State_flag_of_Iran_%281964%E2%80%931980%29.svg/330px-State_flag_of_Iran_%281964%E2%80%931980%29.svg.png" width="50px" height="50px"></h1>
+
+
 یه سیستم ساده چت متنی که کمک میکنه در شرایط عدم دسترسی به پیامرسان های بین المللی ارتباط حفظ بشه.
-*این پروژه صرفا یک **irc chat** نیست و فقط نامش از اون الهام گرفته شده.*
+این پروژه صرفا یک [irc chat](https://en.wikipedia.org/wiki/IRC) نیست و فقط نامش از اون الهام گرفته شده.
 
 ## قابلیت ها
 - کاملا رایگان
