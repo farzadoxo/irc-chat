@@ -1,0 +1,4 @@
+*.directory
+*__pycache__
+*.db
+.env
