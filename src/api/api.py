@@ -10,6 +10,7 @@ from core.database import redis_client , KEY
 from core.models import Message,Room
 from extentions.room_websocket import RoomWebsocket
 
+import colorama
 import datetime
 import json
 import random
@@ -75,41 +76,57 @@ async def websocket_endpoint(ws:WebSocket):
 
 # Room messaging websocket
 connected_rooms : list[Room] = []
-room_sessions : list[RoomWebsocket] = []
-dead_connections : list[RoomWebsocket] = []
+room_sessions : list[WebSocket] = []
 @app.websocket('/rws/{room_id}')
-async def websocket_endpoint(rws:RoomWebsocket,room_id:str):
+async def websocket_endpoint(rws: WebSocket, room_id: str):
+
     rooms = [json.loads(room) for room in redis_client.lrange('rooms',0,-1)]
+    matched = None
     for room in rooms:
         if room['id'] == room_id:
-            connected_rooms.append(Room(name=room['name'],user_limit=room['user_limit'],visable=room['visable']))
-            await rws.accept()
-            rws.room = room_id
-            room_sessions.append(rws)
+            matched = room
+            break
     
+    if matched is None:
+        print("Room not found")
+        await rws.close()
+        return
+
+    await rws.accept()
+    rws.room = room_id
+    room_sessions.append(rws)
+
     try:
         while True:
             data = await rws.receive_json()
-            if data:
-                guid = random.randint(10000,345345345)
-                redis_client.rpush(f'room:{room_id}',json.dumps({'id':guid,
-                                                                 'room_id':room_id,
-                                                                 'content':data['content'],
-                                                                 'created_at':str(datetime.datetime.now())}))
-                
-                for connection in room_sessions:
-                    if data['room_id'] == rws.room:
-                        try:
-                            rws.send_json(data)
-                        except:
-                            dead_connections.append(rws)
-                
-                for dead in dead_connections:
-                    room_sessions.remove(dead)
+
+            guid = random.randint(10000,345345345)
+            redis_client.rpush(
+                f'room:{room_id}',
+                json.dumps({
+                    'id': guid,
+                    'room_id': room_id,
+                    'content': data['content'],
+                    'created_at': str(datetime.datetime.now()),
+                    'username': data['username']
+                })
+            )
+
+            dead = []
+            for connection in room_sessions:
+                if getattr(connection, "room", None) == room_id:
+                    try:
+                        await connection.send_json(data)
+                    except:
+                        dead.append(connection)
+
+            for d in dead:
+                room_sessions.remove(d)
 
     except WebSocketDisconnect:
         if rws in room_sessions:
             room_sessions.remove(rws)
+
 
                 
 
