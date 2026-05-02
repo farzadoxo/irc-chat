@@ -261,14 +261,14 @@ def get_room(room_id):
     for room in rooms:
         if room['id'] == room_id:
                 messages = [json.loads(msg) for msg in redis_client.lrange(f"room:{room_id}",0,-1)]
-                stat = {"info":{},"messages":[]}
-                stat['info'] = {"id":room['id'],"name":room['name'],"user_limit":room['user_limit'],"visable":room['visable']}
+                response = {"info":{},"messages":[]}
+                response['info'] = {"id":room['id'],"name":room['name'],"user_limit":room['user_limit'],"visable":room['visable']}
                 for message in messages:
-                    stat['messages'].append({"id":message['id'],
+                    response['messages'].append({"id":message['id'],
                                             "content":message['content'],
                                             "created_at":message['created_at']})
                 
-                return JSONResponse(stat,status_code=status.HTTP_200_OK)
+                return JSONResponse(response,status_code=status.HTTP_200_OK)
 
 
 
