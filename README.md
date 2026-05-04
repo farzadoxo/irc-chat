@@ -53,4 +53,4 @@ _____________
 
 #Freedom 🕊️
 
-<a href="https://www.coffeebede.com/farzadoxo"><img class="img-fluid" src="https://coffeebede.ir/DashboardTemplateV2/app-assets/images/banner/default-yellow.svg" /></a>
+<a href="https://www.coffeebede.com/farzadoxo"><img class="img-fluid" src="https://github.com/farzadoxo/farzadoxo/blob/master/CoffeBede.svg" width=30%/></a>
