@@ -19,14 +19,13 @@ import os
 
 # env
 BASE_DIR = Path(__file__).resolve().parent.parent
-STATIC_DIR = BASE_DIR / "statics"
+STATIC_DIR = BASE_DIR / "front-end"
 TEMPLATES_DIR = STATIC_DIR / "templates"
 
 
 app = FastAPI()
-app.mount("/statics", StaticFiles(directory=str(STATIC_DIR)), name="statics")
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-templates = Jinja2Templates(directory='statics/templates')
+app.mount("/front-end", StaticFiles(directory=str(STATIC_DIR)), name="statics")
+templates = Jinja2Templates(directory=str(STATIC_DIR))
 
 app.add_middleware(
     CORSMiddleware,

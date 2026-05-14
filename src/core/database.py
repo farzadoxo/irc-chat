@@ -1,29 +1,20 @@
-# i will use redis version but you can use sqlite version if you want!
 
-# """ SQLITE VERSION """
-# import sqlite3 
-
-# conn = sqlite3.connect("db.db",check_same_thread=False)
-# cur = conn.cursor()
-
-# cur.execute(f"""
-#                 CREATE TABLE IF NOT EXISTS messages (
-#                 id INT PRIMARY KEY ,
-#                 content TEXT NOT NULL ,
-#                 created_at DATETIME NOT NULL)
-#             """) 
-
-
+import os
+import dotenv
 
 """ REDIS VERSION """
 from redis import Redis
 # import datetime
 # import json
 
+dotenv.load_dotenv()
+DB_HOST = os.getenv('DB_HOST')
+DB_PORT = os.getenv('DB_PORT')
+
 
 redis_client = Redis(
-    host='redis', # for run localy set host on '127.0.0.1'
-    port=6379,
+    host= DB_HOST,
+    port= DB_PORT,
     decode_responses=True
 )
 
