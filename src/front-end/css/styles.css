@@ -1,6 +1,6 @@
 @font-face {
   font-family: "Vazirmatn";
-  src: url("/front-end/fonts/Vazirmatn-Regular.ttf") format("truetype");
+  src: url("fonts/Vazirmatn-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
