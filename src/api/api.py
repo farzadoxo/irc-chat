@@ -19,14 +19,9 @@ import os
 
 # env
 BASE_DIR = Path(__file__).resolve().parent.parent
-STATIC_DIR = BASE_DIR / "front-end"
-TEMPLATES_DIR = STATIC_DIR / "templates"
 
-
+# app
 app = FastAPI()
-app.mount("/front-end", StaticFiles(directory=str(STATIC_DIR)), name="statics")
-templates = Jinja2Templates(directory=str(STATIC_DIR))
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -132,11 +127,11 @@ async def websocket_endpoint(rws: WebSocket, room_id: str):
 
 
 
-@app.get('/')
-def root(request:Request):
-    return templates.TemplateResponse(request=request,
-                                      name="index.html",
-                                      context={'messages':[json.loads(msg) for msg in redis_client.lrange(KEY,0,-1)]})
+# @app.get('/')
+# def root(request:Request):
+#     return templates.TemplateResponse(request=request,
+#                                       name="index.html",
+#                                       context={'messages':[json.loads(msg) for msg in redis_client.lrange(KEY,0,-1)]})
 
 
 
