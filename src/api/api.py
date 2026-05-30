@@ -36,7 +36,7 @@ app.add_middleware(
 connections : list[WebSocket] = []
 dead_connections : list[WebSocket] = []
 @app.websocket('/ws')
-async def websocket_endpoint(ws:WebSocket):
+async def chat_ws(ws:WebSocket):
     await ws.accept()
     connections.append(ws)
     try:
@@ -72,7 +72,7 @@ async def websocket_endpoint(ws:WebSocket):
 connected_rooms : list[Room] = []
 room_sessions : list[WebSocket] = []
 @app.websocket('/rws/{room_id}')
-async def websocket_endpoint(rws: WebSocket, room_id: str):
+async def room_ws(ws: WebSocket, room_id: str):
 
     rooms = [json.loads(room) for room in redis_client.lrange('rooms',0,-1)]
     matched = None
@@ -83,16 +83,16 @@ async def websocket_endpoint(rws: WebSocket, room_id: str):
     
     if matched is None:
         print("Room not found")
-        await rws.close()
+        await ws.close()
         return
 
-    await rws.accept()
-    rws.room = room_id
-    room_sessions.append(rws)
+    await ws.accept()
+    ws.room = room_id
+    room_sessions.append(ws)
 
     try:
         while True:
-            data = await rws.receive_json()
+            data = await ws.receive_json()
 
             guid = random.randint(10000,345345345)
             redis_client.rpush(
@@ -118,8 +118,8 @@ async def websocket_endpoint(rws: WebSocket, room_id: str):
                 room_sessions.remove(d)
 
     except WebSocketDisconnect:
-        if rws in room_sessions:
-            room_sessions.remove(rws)
+        if ws in room_sessions:
+            room_sessions.remove(ws)
 
 
                 
